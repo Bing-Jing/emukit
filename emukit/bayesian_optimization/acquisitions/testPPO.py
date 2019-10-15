@@ -1,5 +1,4 @@
 from ppo import PPO
-from ppo2 import PPO2
 import tensorflow as tf
 import numpy as np
 import matplotlib.pyplot as plt
@@ -61,7 +60,10 @@ if __name__ == "__main__":
     
     saver = tf.train.Saver()
     saver.restore(ppo.sess, model_path)
-    for ep in range(50):
+    PPO_totalR = []
+    EI_totalR = []
+    PI_totalR = []
+    for ep in range(30):
         
         fun = env.reset(upper_bound=1,lower_bound=0)
         ppo.ppoMax = 0
@@ -138,6 +140,9 @@ if __name__ == "__main__":
             rPI = (env.minVal-PIcurMin)
             boPIep_r.append(rPI)
 
+        PPO_totalR.append(boPPOep_r)
+        EI_totalR.append(boEIep_r)
+        PI_totalR.append(boPIep_r)
 
         plt.figure(figsize=(12, 8))
 
@@ -163,3 +168,38 @@ if __name__ == "__main__":
         # plt.show()
         plt.draw()
         fig1.savefig('compareMin2/ep_{}.png'.format(ep), dpi=100)
+    PPO_totalR = np.array(PPO_totalR)
+    EI_totalR = np.array(EI_totalR)
+    PI_totalR = np.array(PI_totalR)
+    plt.figure(figsize=(12, 8))
+    plt.ylabel(r"$reward$")
+    plt.xlabel(r"$points$")
+    plotX = np.linspace(0, len(boPPOep_r), len(boPPOep_r))[:, None]
+    PPO_mean = np.mean(PPO_totalR,axis=0)
+    PPO_var = np.var(PPO_totalR,axis=0)
+
+    EI_mean = np.mean(EI_totalR,axis=0).reshape(-1)
+    EI_var = np.var(EI_totalR,axis=0).reshape(-1)
+
+    PI_mean = np.mean(PI_totalR,axis=0).reshape(-1)
+    PI_var = np.var(PI_totalR,axis=0).reshape(-1)
+
+    m1, = plt.plot(plotX, PPO_mean,"r",label="ppo")
+    m2, = plt.plot(plotX, EI_mean,"g",label="EI")
+    m3, = plt.plot(plotX, PI_mean,"b",label="PI")
+
+    plt.fill_between(plotX[:, 0],
+                            PPO_mean + np.sqrt(PPO_var),
+                            PPO_mean - np.sqrt(PPO_var), color="r0", alpha=0.1)
+    plt.fill_between(plotX[:, 0],
+                            EI_mean + np.sqrt(EI_var),
+                            EI_mean - np.sqrt(EI_var), color="g0", alpha=0.1)
+    plt.fill_between(plotX[:, 0],
+                            PI_mean + np.sqrt(PI_var),
+                            PI_mean - np.sqrt(PI_var), color="b0", alpha=0.1)
+    plt.legend(handles=[m1,m2,m3,],loc="best")
+    fig2 = plt.gcf()
+    plt.show()
+    # print(PPO_totalR.shape)
+    plt.draw()
+    fig2.savefig('final_compare.png', dpi=100)

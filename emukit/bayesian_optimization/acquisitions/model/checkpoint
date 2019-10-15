@@ -1,2 +1,3 @@
-model_checkpoint_path: "modelMin.ckpt"
-all_model_checkpoint_paths: "modelMin.ckpt"
+model_checkpoint_path: "model5.ckpt100.cptk"
+all_model_checkpoint_paths: "model5.ckpt0.cptk"
+all_model_checkpoint_paths: "model5.ckpt100.cptk"

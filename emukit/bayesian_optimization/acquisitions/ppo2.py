@@ -35,13 +35,13 @@ GAMMA = 0.98
 LR = 0.0001
 BATCH = 20
 UPDATE_STEPS = 10
-A_DIM = 1
+A_DIM = 200
 CPI_epsilon = 0.15                 # Clipped surrogate objective, find this is better
 
 
 class PPO(Acquisition):
 
-    def __init__(self, model: Union[IModel, IDifferentiable] = None,load = True):
+    def __init__(self, model: Union[IModel, IDifferentiable] = None,load = False):
         self.model = model
         self.sess = tf.Session()
         self.S_DIM = 2
@@ -55,7 +55,7 @@ class PPO(Acquisition):
         self.ep_r = 0
         self.buffer_ep = []
         self.s_ = None
-        self.model_path = "model/"
+        self.model_path = "model/model5.ckpt"
         # critic
         
         with tf.variable_scope('critic'):
@@ -109,8 +109,8 @@ class PPO(Acquisition):
         self.sess.run(init)
 
     def load_model(self):
+        print("Loading.....")
         ckpt = tf.train.get_checkpoint_state(self.model_path)
-        print("Loading {}".format(ckpt))
         if ckpt is None:
             print("ckpt not found")
         self.saver.restore(self.sess, ckpt.model_checkpoint_path)
@@ -139,9 +139,9 @@ class PPO(Acquisition):
             # l1 = tf.layers.dense(self.tfs, 200, tf.nn.tanh, trainable=trainable)
             # l1 = tf.layers.dense(l1, 200, tf.nn.tanh, trainable=trainable)
             # l1 = tf.layers.dense(l1, 200, tf.nn.tanh, trainable=trainable)
-            mu = 2 * slim.fully_connected(l1, A_DIM,activation_fn=tf.nn.tanh,trainable=trainable)
+            mu = 2 * slim.fully_connected(l1, A_DIM,activation_fn=tf.nn.softmax,trainable=trainable)
             # mu = 2 * tf.layers.dense(l1, A_DIM, tf.nn.tanh, trainable=trainable)
-            sigma = slim.fully_connected(l1, A_DIM,activation_fn=tf.nn.tanh,trainable=trainable)
+            sigma = slim.fully_connected(l1, A_DIM,activation_fn=tf.nn.softmax,trainable=trainable)
             # sigma = tf.layers.dense(l1, A_DIM, tf.nn.softplus, trainable=trainable)
             norm_dist = tfp.distributions.Normal(loc=mu, scale=sigma)
         params = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope=name)

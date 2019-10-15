@@ -8,13 +8,15 @@ class funcEnv():
         self.curFun = None
         self.maxVal = 0
         self.minVal = float('inf')
+        self.kernel_lengthscale = 0.1
+        self.kernel_var = 1.0
     def reset(self,sample_point = 2000,upper_bound = 1, lower_bound = 0):
         X = np.linspace(lower_bound, upper_bound, num=sample_point)[:, None]
         # 2. Specify the GP kernel (the smoothness of functions)
         # Smaller lengthscale => less smoothness
-        kernel_var = 1.0
-        kernel_lengthscale = 0.05 ## modify to 0.1~0.5
-        kernel = kernel_var * RBF(kernel_lengthscale)
+        # kernel_var = 1.0
+        # kernel_lengthscale = 0.5 ## modify to 0.1~1.0
+        kernel = self.kernel_var * RBF(self.kernel_lengthscale)
         # 3. Sample true function values for all inputs in X
         trueF = self.sample_true_u_functions(X, kernel)
         Y = trueF[0]
